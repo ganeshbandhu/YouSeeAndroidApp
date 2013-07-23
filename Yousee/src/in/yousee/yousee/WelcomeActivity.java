@@ -2,15 +2,15 @@ package in.yousee.yousee;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
-import android.view.WindowManager;
 
 public class WelcomeActivity extends Activity
 {
 
 	Thread t;
+	String sessionId = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -18,7 +18,8 @@ public class WelcomeActivity extends Activity
 
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		// getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+		// WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.welcome_activity);
 
 		Thread splashThread = new Thread() {
@@ -40,63 +41,87 @@ public class WelcomeActivity extends Activity
 				{
 					finish();
 					showMainActivity();
+
 				}
 			}
 		};
 		splashThread.start();
+		/*
+		SessionHandler session = new SessionHandler(this);
+		Log.i("tag", "new thread started");
+		session.loginExec();
+		*/
+		
+		
 	}
 
-	public void checkLoginCredentials()
+	private void getSessionDataIfExists()
 	{
-		SharedPreferences sharedPrefs;
-		if (NetworkConnectionHandler.isNetworkConnected(getApplicationContext()))
+		SessionHandler session = new SessionHandler(this);
+
+		if (session.getSessionId(sessionId))
+			;
+		else if (session.isLoginCredentialsExists())
 		{
-
-			String username = null;
-			String password = null;
-			sharedPrefs = getPreferences(MODE_PRIVATE);
-			String sessionID = sharedPrefs.getString("SESSION_ID", null);
-			
-			if (sessionID == null)
-			{
-
-			} 
-			//if user is loggedOut
-			else if (getLoginCredentials(username, password))
-			{
-				SharedPreferences.Editor editor = sharedPrefs.edit();
-				sessionID = login();
-				editor.putString("SESSION_ID", sessionID);
-
-			}
+			session.loginExec();
+		} else
+		{
+			sessionId = "guestId";
 		}
-		showMainActivity();
-	}
 
-	public boolean getLoginCredentials(String username, String password)
-	{
-		SharedPreferences sharedPrefs;
-		sharedPrefs = getPreferences(MODE_PRIVATE);
-		username = sharedPrefs.getString("USERNAME", null);
-		password = sharedPrefs.getString("PASSWORD", null);
-		if (username == null || password == null)
-			return false;
-		else
-			return true;
-	}
-
-	public String login()
-	{
-		String sessionID = null;
-		return sessionID;
 	}
 
 	public void showMainActivity()
 	{
-		Intent intent = new Intent();
 
-		intent.setClass(this, MainActivity.class);
+		Log.i("tag","in Show menu activity");
+		Intent intent = new Intent();
+		intent.putExtra("sessionId", sessionId);
+		intent.setClass(this, in.yousee.yousee.MainActivity.class);
 		startActivity(intent);
 	}
+
+	@Override
+	protected void onDestroy()
+	{
+		Log.i("tag","onDestroy");
+		super.onDestroy();
+	}
+
+	@Override
+	protected void onPause()
+	{
+		Log.i("tag","onPause");
+		super.onPause();
+	}
+
+	@Override
+	protected void onRestart()
+	{
+		Log.i("tag","onRestart");
+		super.onRestart();
+	}
+
+	@Override
+	protected void onResume()
+	{
+		Log.i("tag","onResume");
+		super.onResume();
+	}
+
+	@Override
+	protected void onStart()
+	{
+		Log.i("tag","onStart");
+		super.onStart();
+	}
+
+	@Override
+	protected void onStop()
+	{
+		// TODO Auto-generated method stub
+		super.onStop();
+	}
+	
 
 }
