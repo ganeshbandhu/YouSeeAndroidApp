@@ -10,7 +10,9 @@ import java.util.LinkedHashMap;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -24,11 +26,12 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
 
-public class MainActivity extends SherlockActivity implements OnItemClickListener, OnResponseRecievedListener
+public class MainFragment extends SherlockFragment implements OnItemClickListener, OnResponseRecievedListener
 {
 
 	private static final String LOG_TAG = "tag";
@@ -38,19 +41,26 @@ public class MainActivity extends SherlockActivity implements OnItemClickListene
 	OpportunityListBuilder listBuilder;
 	ArrayList<ProxyOpportunityItem> proxyList;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState)
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+	{
+		// Inflate the layout for this fragment
+		View view = inflater.inflate(R.layout.login_form, container, false);
+		instantiate(view);
+		return view;
+	}
+
+	protected void instantiate(View view)
 	{
 
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		// requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		Log.i(LOG_TAG, "progress bar : true");
-		setSupportProgressBarIndeterminate(true);
-		setSupportProgressBarIndeterminateVisibility(true);
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		// setSupportProgressBarIndeterminate(true);
+		// setSupportProgressBarIndeterminateVisibility(true);
+		// super.onCreate(savedInstanceState);
+		// setContentView(R.layout.activity_main);
 
-		filterFrame = (FrameLayout) findViewById(R.id.filterFrame);
-		updateButton = (Button) findViewById(R.id.updateButton);
+		filterFrame = (FrameLayout) view.findViewById(R.id.filterFrame);
+		updateButton = (Button) view.findViewById(R.id.updateButton);
 		setUpdateButtonOnClickListener();
 
 		buildOpportunityListForTheFirstTime();
@@ -61,17 +71,13 @@ public class MainActivity extends SherlockActivity implements OnItemClickListene
 	private void buildOpportunityListForTheFirstTime()
 	{
 		Log.i("tag", "building opportunity list");
-		if (listBuilder == null)
-		{
-			listBuilder = new OpportunityListBuilder(this, getApplicationContext());
-		}
+		listBuilder = new OpportunityListBuilder(this, getActivity().getApplicationContext());
 		try
 		{
-			// throw new CustomException("fsd");
-			listBuilder.cook();
+			throw new CustomException("fsd");
+			// listBuilder.cook();
 		} catch (CustomException e)
 		{
-			promptRetry();
 			// testing
 			// buildOpportunityList(null);
 			// testing
@@ -98,7 +104,7 @@ public class MainActivity extends SherlockActivity implements OnItemClickListene
 		 */
 
 		this.proxyList = proxyList;
-		listview = (ListView) findViewById(R.id.opportunityListview);
+		listview = (ListView) getView().findViewById(R.id.opportunityListview);
 
 		String[] titles = new String[proxyList.size()];
 		int[] types = new int[proxyList.size()];
@@ -113,12 +119,11 @@ public class MainActivity extends SherlockActivity implements OnItemClickListene
 
 		}
 
-		OpportunityListAdapter adapter = new OpportunityListAdapter(getApplicationContext(), titles, types);
+		OpportunityListAdapter adapter = new OpportunityListAdapter(getActivity().getApplicationContext(), titles, types);
 		listview.setAdapter(adapter);
 		adapter.notifyDataSetChanged();
 		listview.setOnItemClickListener(this);
 		Log.i(LOG_TAG, "progress bar : false");
-		setSupportProgressBarIndeterminateVisibility(false);
 
 	}
 
@@ -129,45 +134,21 @@ public class MainActivity extends SherlockActivity implements OnItemClickListene
 			@Override
 			public void onClick(View v)
 			{
-				setSupportProgressBarIndeterminateVisibility(true);
+
 				showFilterMenu(false);
-				listBuilder = new OpportunityListBuilder(filterGroupList, MainActivity.this, getApplicationContext());
+				listBuilder = new OpportunityListBuilder(filterGroupList, MainFragment.this, getActivity().getApplicationContext());
 				try
 				{
 					listBuilder.cook();
 				} catch (CustomException e)
 				{
-					CustomException.showToastError(getApplicationContext(), e);
+					CustomException.showToastError(getActivity().getApplicationContext(), e);
 
 				}
 
 			}
 		});
 
-	}
-
-	private void promptRetry()
-	{
-
-		Intent intent = new Intent();
-		intent.setClass(this, RetryActivity.class);
-		startActivityForResult(intent, 1);
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data)
-	{
-		// Log.i(LOG_TAG, "retrying");
-		// requestCode = RESULT_OK;
-		if (requestCode == RESULT_OK)
-		{
-			buildOpportunityListForTheFirstTime();
-			Log.i(LOG_TAG, "retrying");
-		} else
-		{
-			Log.i(LOG_TAG, "Cancelled");
-		}
-		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	private boolean filterMenuVisibility = false;
@@ -208,10 +189,10 @@ public class MainActivity extends SherlockActivity implements OnItemClickListene
 	public void initiateExpandableList()
 	{
 		// get reference to the ExpandableListView
-		myList = (ExpandableListView) findViewById(R.id.expandableListView1);
+		myList = (ExpandableListView) getView().findViewById(R.id.expandableListView1);
 		// setPadding();
 		// create the adapter by passing your ArrayList data
-		listAdapter = new FilterListAdapter(MainActivity.this, filterGroupList);
+		listAdapter = new FilterListAdapter(getActivity(), filterGroupList);
 		// attach the adapter to the list
 		myList.setAdapter(listAdapter);
 
@@ -291,7 +272,7 @@ public class MainActivity extends SherlockActivity implements OnItemClickListene
 			// get the child info
 			FilterChildInfo detailInfo = headerInfo.getProductList().get(childPosition);
 			// display it or do something with it
-			Toast.makeText(getBaseContext(), "Clicked on Detail " + headerInfo.getName() + "/" + detailInfo.getName(), Toast.LENGTH_SHORT).show();
+			Toast.makeText(getActivity().getApplicationContext(), "Clicked on Detail " + headerInfo.getName() + "/" + detailInfo.getName(), Toast.LENGTH_SHORT).show();
 			CheckBox checkBox = detailInfo.getCheckBox();
 			checkBox.setChecked(!checkBox.isChecked());
 			return false;
@@ -308,7 +289,7 @@ public class MainActivity extends SherlockActivity implements OnItemClickListene
 			// get the group header
 			FilterGroupInfo headerInfo = filterGroupList.get(groupPosition);
 			// display it or do something with it
-			Toast.makeText(getBaseContext(), "Child on Header " + headerInfo.getName(), Toast.LENGTH_SHORT).show();
+			Toast.makeText(getActivity().getApplicationContext(), "Child on Header " + headerInfo.getName(), Toast.LENGTH_SHORT).show();
 
 			return false;
 		}
@@ -352,20 +333,12 @@ public class MainActivity extends SherlockActivity implements OnItemClickListene
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
-
-		getSupportMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
-	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id)
 	{
 		Log.i("tag", "item clicked " + position);
 
 		Intent intent = new Intent();
-		intent.setClass(this, IndividualOpportunityItemActivity.class);
+		//intent.setClass(this, IndividualOpportunityItemActivity.class);
 		intent.putExtra("result", proxyList.get(position).toJsonString());
 		startActivity(intent);
 
