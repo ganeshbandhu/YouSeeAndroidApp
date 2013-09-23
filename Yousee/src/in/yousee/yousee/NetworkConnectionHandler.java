@@ -6,17 +6,26 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Locale;
 
+import org.apache.http.Header;
+import org.apache.http.HeaderIterator;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHttpResponse;
+import org.apache.http.params.HttpParams;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * 
@@ -38,11 +47,13 @@ public class NetworkConnectionHandler implements Runnable
 	DownloadWebpageTask downloadwebContent;
 	HttpPost postRequest;
 	Chef listener;
+	public static String sessionId; 
+	public static DefaultHttpClient httpclient;
 
 	public NetworkConnectionHandler(Context context)
 	{
 		this.context = context;
-
+		httpclient = new DefaultHttpClient();
 	}
 
 	/**
@@ -67,9 +78,11 @@ public class NetworkConnectionHandler implements Runnable
 			Log.i("tag", "network connection is available");
 			return true;
 
-		} else
+		}
+		else
 		{
-			throw new CustomException(CustomException.NETWORK_NOT_FOUND);
+			Log.i("tag", "throwing exception");
+			throw new CustomException(CustomException.ERROR_NETWORK_NOT_FOUND);
 		}
 
 	}
@@ -83,7 +96,7 @@ public class NetworkConnectionHandler implements Runnable
 	 * 
 	 * @param Chef
 	 *                assigned to a global variable listener. a method of
-	 *                this class is called after recieving response
+	 *                this class is called after receiving response
 	 * 
 	 * @throws CustomException
 	 * @see in.yousee.yousee.model.CustomException
@@ -93,6 +106,7 @@ public class NetworkConnectionHandler implements Runnable
 		this.listener = listener;
 		this.postRequest = postRequest;
 		downloadwebContent = new DownloadWebpageTask();
+
 		if (NetworkConnectionHandler.isNetworkConnected(context))
 		{
 			downloadwebContent.execute(postRequest);
@@ -110,7 +124,7 @@ public class NetworkConnectionHandler implements Runnable
 	 * 
 	 * @param Chef
 	 *                assigned to a global variable listener. a method of
-	 *                this class is called after recieving response
+	 *                this class is called after receiving response
 	 * 
 	 * @throws CustomException
 	 * @see in.yousee.yousee.model.CustomException
@@ -120,8 +134,24 @@ public class NetworkConnectionHandler implements Runnable
 		this.listener = listener;
 		this.postRequest = postRequest;
 		Thread networkThread = new Thread(this);
+		try
+		{
+			Log.i("tag", "fksdjklfjskdhfkjshd");
+			Log.i("tag", readIt(postRequest.getEntity().getContent()));
+		}
+		catch (IllegalStateException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (NetworkConnectionHandler.isNetworkConnected(context))
 		{
+			Log.i("tag", "before Started");
 			downloadwebContent = new DownloadWebpageTask();
 			networkThread.start();
 		}
@@ -146,73 +176,149 @@ public class NetworkConnectionHandler implements Runnable
 	 * @param <Sring>
 	 *                output
 	 */
-	private class DownloadWebpageTask extends AsyncTask<HttpPost, Void, String>
+	private class DownloadWebpageTask extends AsyncTask<HttpPost, Void, HttpResponse>
 	{
 
 		@Override
-		protected String doInBackground(HttpPost... postRequests)
+		protected HttpResponse doInBackground(HttpPost... postRequests)
 		{
-
-			// params comes from the execute() call: params[0] is
-			// the url.
 			try
 			{
+				// Log.i("tag", "cannot retrieve : "
+				// +postRequests[0].getURI().toString());
 				return downloadUrl(postRequests[0]);
-			} catch (IOException e)
-			{
-				return "Unable to retrieve web page. URL may be invalid.";
 			}
+			catch (IOException e)
+			{
+				Log.i("tag", "cannot retrieve");
+				// HttpResponse response = new
+				// BasicHttpResponse(null,
+				// CustomException.IO_ERROR,
+				// "IO error Occured");
+				// Toast.makeText(context,
+				// "IOException occured",
+				// Toast.LENGTH_SHORT).show();
+
+				e.printStackTrace();
+
+				return null;
+			}
+
 		}
 
 		// onPostExecute displays the results of the AsyncTask.
 		@Override
-		protected void onPostExecute(String result)
+		protected void onPostExecute(HttpResponse response)
 		{
-			onResponseRecieved(result);
+			onResponseRecieved(response);
 		}
+
 	}
 
 	/**
-	 * This method is called whenever the response is recieved from the
+	 * This method is called whenever the response is received from the
 	 * server.
 	 */
 
-	public void onResponseRecieved(String webContentResult)
+	public void onResponseRecieved(HttpResponse response)
 	{
+		int requestCode = 0;
+		int resultCode = 0;
 
-		listener.serveResponse(webContentResult);
+		if (response != null)
+		{
+
+			if (response.containsHeader(Chef.TAG_NETWORK_REQUEST_CODE))
+			{
+
+				Header[] headers = response.getAllHeaders();
+				// Log.i("header "+headers[i].getName()+ " : ",
+				// headers[i].getValue());
+				for (int i = 0; i < headers.length; i++)
+				{
+					Log.i("tag", "header " + headers[i].getName() + " : " + headers[i].getValue());
+				}
+
+				String requestCodeString = response.getFirstHeader(Chef.TAG_NETWORK_REQUEST_CODE).getValue();
+				Log.i("tag", "requestCode : " + requestCodeString);
+				// String sessionId =
+				// response.getFirstHeader("sessionId").getValue();
+				// Log.i("tag", "sessionId : " + sessionId);
+				requestCode = Integer.valueOf(requestCodeString);
+
+				InputStream is = null;
+				String contentAsString = null;
+				try
+				{
+					is = response.getEntity().getContent();
+					contentAsString = readIt(is);
+
+				}
+				catch (IllegalStateException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				finally
+				{
+					if (is != null)
+					{
+						try
+						{
+							is.close();
+						}
+						catch (IOException e)
+						{
+							// TODO Auto-generated
+							// catch
+							// block
+							e.printStackTrace();
+						}
+					}
+				}
+				// Log.i("tag", "content string : " +
+				// contentAsString);
+				listener.serveResponse(contentAsString, requestCode);
+			}
+			else
+				Toast.makeText(context, "Something went wrong,", Toast.LENGTH_LONG).show();
+
+		}
+		else
+		{
+			Toast.makeText(context, "Something went wrong, Click on refresh.", Toast.LENGTH_LONG).show();
+		}
 
 	}
 
 	/**
-	 * This method connects to Server and downloads Response String is
-	 * extracted from Body of response
+	 * This method connects to Server and downloads Response is returned
 	 */
-	private String downloadUrl(HttpPost postRequest) throws IOException
+	private HttpResponse downloadUrl(HttpPost postRequest) throws IOException
 	{
 		InputStream is = null;
 
-		try
+		Log.i("tag", "download Started" + readIt(postRequest.getEntity().getContent()));
+		Header[] headers = postRequest.getAllHeaders();
+		Log.i("tag","lenght "+headers.length);
+		// headers[i].getValue());
+		for (int i = 0; i < headers.length; i++)
 		{
-			Log.i("tag", "download Started");
-			HttpClient httpclient = new DefaultHttpClient();
-
-			HttpResponse response = httpclient.execute(postRequest);
-			is = response.getEntity().getContent();
-			String contentAsString = readIt(is);
-			Log.i("tag", "download completed");
-			return contentAsString;
-
-			// Makes sure that the InputStream is closed after the
-			// app is
-			// finished using it.
-		} finally
-		{
-			if (is != null)
-			{
-				is.close();
-			}
+			Log.i("tag", "request " + headers[i].getName() + " : " + headers[i].getValue());
 		}
+		// httpclient.getCookieStore().addCookie();
+		HttpResponse response = httpclient.execute(postRequest);
+
+		return response;
+
+		// Makes sure that the InputStream is closed after the
+		// app is
+		// finished using it.
 
 	}
 

@@ -13,6 +13,7 @@ import android.view.View.OnFocusChangeListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,7 +61,7 @@ public class LoginActivity extends Activity implements OnClickListener, OnFocusC
 		loginButton.setOnClickListener(this);
 		RegisterButton.setOnClickListener(this);
 
-		usernameEditText.setText("gunaranjan");
+		usernameEditText.setText("vivek");
 		passwordEditText.setText("password");
 
 	}
@@ -73,28 +74,30 @@ public class LoginActivity extends Activity implements OnClickListener, OnFocusC
 			if (validateForm())
 			{
 				Log.i("tag", "Logging in ........");
-				SessionHandler session = new SessionHandler(context, this);
+				SessionHandler session = new SessionHandler(getApplicationContext(), this);
 				try
 				{
 					session.loginExec(usernameEditText.getText().toString(), passwordEditText.getText().toString());
-				} catch (CustomException e)
+
+				}
+				catch (CustomException e)
 				{
 					switch (e.errorCode)
-						{
-						case CustomException.INVALID_URL:
-						case CustomException.NETWORK_NOT_FOUND:
-						case CustomException.NO_INTERNET_CONNECTIVITY:
-							CustomException.showToastError(context, e);
-							break;
-						case CustomException.USERNAME_INVALID:
-							showUsernameError(e.getErrorMsg());
-							break;
-						case CustomException.PASSWORD_INVALID:
-							showPasswordError(e.getErrorMsg());
+					{
+					case CustomException.ERROR_INVALID_URL:
+					case CustomException.ERROR_NETWORK_NOT_FOUND:
+					case CustomException.ERROR_NO_INTERNET_CONNECTIVITY:
+						CustomException.showToastError(context, e);
+						break;
+					case CustomException.ERROR_USERNAME_INVALID:
+						showUsernameError(e.getErrorMsg());
+						break;
+					case CustomException.ERROR_PASSWORD_INVALID:
+						showPasswordError(e.getErrorMsg());
 
-						default:
-							break;
-						}
+					default:
+						break;
+					}
 
 				}
 
@@ -112,16 +115,16 @@ public class LoginActivity extends Activity implements OnClickListener, OnFocusC
 		if (hasFocus == false)
 		{
 			switch (v.getId())
-				{
-				case R.id.username:
-					validateUsername();
-					break;
-				case R.id.password:
-					validatePassword();
-					break;
-				default:
-					break;
-				}
+			{
+			case R.id.username:
+				validateUsername();
+				break;
+			case R.id.password:
+				validatePassword();
+				break;
+			default:
+				break;
+			}
 
 		}
 
@@ -142,7 +145,8 @@ public class LoginActivity extends Activity implements OnClickListener, OnFocusC
 		{
 			showUsernameError("Please Enter Username");
 			return false;
-		} else
+		}
+		else
 		{
 			showUsernameError("");
 			return true;
@@ -157,7 +161,8 @@ public class LoginActivity extends Activity implements OnClickListener, OnFocusC
 
 			showPasswordError("Please Enter password");
 			return false;
-		} else
+		}
+		else
 		{
 			showPasswordError("");
 			return true;
@@ -182,18 +187,30 @@ public class LoginActivity extends Activity implements OnClickListener, OnFocusC
 		// passwordErrorMsg.setVisibility(View.VISIBLE);
 	}
 
+	private void addErrorMsg(String errorMsg)
+	{
+
+		TextView errorView = (TextView) findViewById(R.id.loginErrorTextView);
+		errorView.setText(errorMsg);
+		errorView.setVisibility(View.VISIBLE);
+
+	}
+
 	@Override
 	public void onLoginFailed()
 	{
-		CustomException.showToastError(context, new CustomException(CustomException.LOGIN_ERROR));
+		addErrorMsg(new CustomException(CustomException.ERROR_LOGIN_ERROR).getErrorMsg());
+		CustomException.showToastError(context, new CustomException(CustomException.ERROR_LOGIN_ERROR));
 	}
 
 	@Override
 	public void onLoginSuccess()
 	{
-		Toast.makeText(context, "Successfully Logged in", Toast.LENGTH_LONG).show();
-		// finish();
+		Toast.makeText(getApplicationContext(), "login success", Toast.LENGTH_LONG).show();
+		setResult(Activity.RESULT_OK, new Intent().putExtra("result", "success"));
+		finish();
 	}
+
 	private void showRegistrationForm()
 	{
 
@@ -202,5 +219,4 @@ public class LoginActivity extends Activity implements OnClickListener, OnFocusC
 		intent.setClass(this, in.yousee.yousee.RegistrationActivity.class);
 		startActivity(intent);
 	}
-
 }
