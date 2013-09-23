@@ -68,7 +68,8 @@ public class RealOpportunityItem extends ProxyOpportunityItem
 				opportunityScheduleList.add(new OpportunitySchedule(item));
 
 			}
-		} catch (JSONException e)
+		}
+		catch (JSONException e)
 		{
 			e.printStackTrace();
 		}
@@ -76,13 +77,13 @@ public class RealOpportunityItem extends ProxyOpportunityItem
 
 	public class OpportunitySchedule implements JSONParsable
 	{
-		private static final String TAG_ACTIVITY_ID = "activityId";
+		private static final String TAG_OPPORTUNITY_ID = "opportunityId";
 		private static final String TAG_FROM_DATE = "fromDate";
 		private static final String TAG_TO_DATE = "toDate";
 		private static final String TAG_FROM_TIME = "fromTime";
 		private static final String TAG_TO_TIME = "toTime";
 		private static final String TAG_LOCATION = "location";
-		private static final String TAG_CITY = "city"; 
+		private static final String TAG_CITY = "city";
 		private static final String TAG_VOL_REQ = "volReq";
 
 		private int opportunityId;
@@ -143,7 +144,8 @@ public class RealOpportunityItem extends ProxyOpportunityItem
 			try
 			{
 				this.fromDate = df.parse(fromDate);
-			} catch (ParseException e)
+			}
+			catch (ParseException e)
 			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -173,7 +175,8 @@ public class RealOpportunityItem extends ProxyOpportunityItem
 			try
 			{
 				this.toDate = df.parse(fromDate);
-			} catch (ParseException e)
+			}
+			catch (ParseException e)
 			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -187,14 +190,14 @@ public class RealOpportunityItem extends ProxyOpportunityItem
 
 		public String getFromTimeString()
 		{
-			if(toTime == null)
+			if (toTime != null)
 			{
 				SimpleDateFormat df = new SimpleDateFormat("hh:mm", Locale.ENGLISH);
 				return df.format(this.fromTime);
 			}
 			else
 				return "";
-			
+
 		}
 
 		public void setFromTime(Date fromTime)
@@ -207,9 +210,10 @@ public class RealOpportunityItem extends ProxyOpportunityItem
 			SimpleDateFormat df = new SimpleDateFormat("hh:mm", Locale.ENGLISH);
 			try
 			{
-				
+
 				this.fromTime = df.parse(fromTime);
-			} catch (ParseException e)
+			}
+			catch (ParseException e)
 			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -223,7 +227,7 @@ public class RealOpportunityItem extends ProxyOpportunityItem
 
 		public String getToTimeString()
 		{
-			if(toTime == null)
+			if (toTime != null)
 			{
 				SimpleDateFormat df = new SimpleDateFormat("hh:ss", Locale.ENGLISH);
 				return df.format(this.toTime);
@@ -234,18 +238,19 @@ public class RealOpportunityItem extends ProxyOpportunityItem
 
 		public void setToTime(Date toTime)
 		{
-			
+
 			this.toTime = toTime;
 		}
 
 		public void setToTime(String toTime)
 		{
-			
+
 			try
 			{
 				SimpleDateFormat df = new SimpleDateFormat("hh:mm", Locale.ENGLISH);
 				this.toTime = df.parse(toTime);
-			} catch (ParseException e)
+			}
+			catch (ParseException e)
 			{
 				// TODO Auto-generated catch block
 				this.toTime = null;
@@ -288,8 +293,8 @@ public class RealOpportunityItem extends ProxyOpportunityItem
 		{
 			try
 			{
-				Log.i("tag",JSONObject.toString());
-				this.opportunityId = JSONObject.getInt(TAG_ACTIVITY_ID);
+				Log.i("tag", JSONObject.toString());
+				this.opportunityId = JSONObject.getInt(TAG_OPPORTUNITY_ID);
 				setFromDate(JSONObject.getString(TAG_FROM_DATE));
 				setToDate(JSONObject.getString(TAG_TO_DATE));
 				setFromTime(JSONObject.getString(TAG_FROM_TIME));
@@ -297,7 +302,8 @@ public class RealOpportunityItem extends ProxyOpportunityItem
 				setLocation(JSONObject.getString(TAG_LOCATION));
 				setCity(JSONObject.getString(TAG_CITY));
 				setVolReq(JSONObject.getInt(TAG_VOL_REQ));
-			} catch (JSONException e)
+			}
+			catch (JSONException e)
 			{
 				e.printStackTrace();
 			}
