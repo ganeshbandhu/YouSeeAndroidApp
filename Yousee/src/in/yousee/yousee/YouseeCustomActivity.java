@@ -30,15 +30,29 @@ public class YouseeCustomActivity extends SherlockFragmentActivity implements Us
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		// setSupportProgressBarIndeterminate(true);
 		setSupportProgressBarIndeterminateVisibility(false);
-		getOverflowMenu();
+		// getOverflowMenu();
 		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu)
+	{
+		
+		/*
+		getSupportMenuInflater().inflate(R.menu.default_menu, menu);
+		this.menu = menu;
+		setMenuState(SessionHandler.isSessionIdExists(getApplicationContext()));
+		*/
+		getSupportMenuInflater().inflate(R.menu.default_menu, menu);
+		this.menu = menu;
+		return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu)
 	{
-		getSupportMenuInflater().inflate(R.menu.default_menu, menu);
-		this.menu = menu;
+		Log.i(LOG_TAG, "onprepare optionsmenu");
+		
 		setMenuState(SessionHandler.isSessionIdExists(getApplicationContext()));
 
 		return super.onPrepareOptionsMenu(menu);
@@ -63,21 +77,10 @@ public class YouseeCustomActivity extends SherlockFragmentActivity implements Us
 		}
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
-		// TODO Auto-generated method stub
-
-		getSupportMenuInflater().inflate(R.menu.default_menu, menu);
-		this.menu = menu;
-		setMenuState(SessionHandler.isSessionIdExists(getApplicationContext()));
-		return super.onCreateOptionsMenu(menu);
-	}
-
 	public boolean refresh = false;
 
 	public static final String LOG_TAG = "tag";
-	protected Chef requestSenderChef;
+	protected Middleware requestSenderChef;
 
 	public void promptRetry(String msg)
 	{
@@ -93,7 +96,7 @@ public class YouseeCustomActivity extends SherlockFragmentActivity implements Us
 
 		try
 		{
-			requestSenderChef.cook();
+			requestSenderChef.sendRequest();
 		}
 		catch (CustomException e)
 		{

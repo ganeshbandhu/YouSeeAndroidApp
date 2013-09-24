@@ -50,6 +50,12 @@ public class RegistrationActivity extends YouseeCustomActivity implements OnFocu
 	}
 
 	@Override
+	public boolean onPrepareOptionsMenu(Menu menu)
+	{
+		return false;
+	}
+
+	@Override
 	public void onFocusChange(View v, boolean isFocused)
 	{
 		if (isFocused == true)
@@ -173,19 +179,19 @@ public class RegistrationActivity extends YouseeCustomActivity implements OnFocu
 		try
 		{
 			JSONObject obj = new JSONObject((String) response);
-			responseCode = obj.getInt(Chef.TAG_NETWORK_RESULT_CODE);
+			responseCode = obj.getInt(Middleware.TAG_NETWORK_RESULT_CODE);
 			if (responseCode == CustomException.SUCCESS_CODE)
 			{
 				SessionHandler sessionHandler = new SessionHandler(getApplicationContext(), this);
 				sessionHandler.serveResponse((String) response, RequestCodes.NETWORK_REQUEST_LOGIN);
 			}
-			else if(responseCode == CustomException.REGISTRATION_EMAIL_ALREADY_TAKEN)
+			else if (responseCode == CustomException.REGISTRATION_EMAIL_ALREADY_TAKEN)
 			{
 				Toast.makeText(getApplicationContext(), "Email, you have entered is already taken, Try with another Email", Toast.LENGTH_LONG).show();
-				//errorField.setText("Email, you have entered is already taken, Try with another Email");
-				//errorField.setVisibility(View.VISIBLE);
+				// errorField.setText("Email, you have entered is already taken, Try with another Email");
+				// errorField.setVisibility(View.VISIBLE);
 			}
-			else if(responseCode == CustomException.REGISTRATION_EMAIL_ALREADY_TAKEN)
+			else if (responseCode == CustomException.REGISTRATION_EMAIL_ALREADY_TAKEN)
 			{
 				Toast.makeText(getApplicationContext(), "Something went wrong, Please try submitting again.", Toast.LENGTH_LONG).show();
 			}
@@ -196,7 +202,7 @@ public class RegistrationActivity extends YouseeCustomActivity implements OnFocu
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	public Context getContext()
@@ -248,7 +254,7 @@ public class RegistrationActivity extends YouseeCustomActivity implements OnFocu
 	@Override
 	public void onLoginFailed()
 	{
-		
+
 	}
 
 	@Override

@@ -40,20 +40,20 @@ public class NetworkConnectionHandler implements Runnable
 	// used to get System services to check network status and required
 	// information
 	Context context;
-
+  
 	// web service URL
-	public static final String DOMAIN = "http://192.168.0.102:80/yousee_test/YouseeMobile/";
+	public static final String DOMAIN = "http://192.168.0.101:80/yousee_test/YouseeMobile/";
 
 	DownloadWebpageTask downloadwebContent;
 	HttpPost postRequest;
-	Chef listener;
-	public static String sessionId; 
-	public static DefaultHttpClient httpclient;
+	Middleware listener;
+	public static String sessionId;
+	public static final DefaultHttpClient httpclient = new DefaultHttpClient();
 
 	public NetworkConnectionHandler(Context context)
 	{
 		this.context = context;
-		httpclient = new DefaultHttpClient();
+
 	}
 
 	/**
@@ -94,14 +94,14 @@ public class NetworkConnectionHandler implements Runnable
 	 * @param HttpPostRequest
 	 *                Post request object
 	 * 
-	 * @param Chef
+	 * @param Middleware
 	 *                assigned to a global variable listener. a method of
 	 *                this class is called after receiving response
 	 * 
 	 * @throws CustomException
 	 * @see in.yousee.yousee.model.CustomException
 	 */
-	public void sendRequest(HttpPost postRequest, Chef listener) throws CustomException
+	public void sendRequest(HttpPost postRequest, Middleware listener) throws CustomException
 	{
 		this.listener = listener;
 		this.postRequest = postRequest;
@@ -122,14 +122,14 @@ public class NetworkConnectionHandler implements Runnable
 	 * @param HttpPostRequest
 	 *                Post request object
 	 * 
-	 * @param Chef
+	 * @param Middleware
 	 *                assigned to a global variable listener. a method of
 	 *                this class is called after receiving response
 	 * 
 	 * @throws CustomException
 	 * @see in.yousee.yousee.model.CustomException
 	 */
-	public void sendRequestInMultiThreadedMode(HttpPost postRequest, Chef listener) throws CustomException
+	public void sendRequestInMultiThreadedMode(HttpPost postRequest, Middleware listener) throws CustomException
 	{
 		this.listener = listener;
 		this.postRequest = postRequest;
@@ -173,7 +173,7 @@ public class NetworkConnectionHandler implements Runnable
 	 * 
 	 * @param <void> progress
 	 * 
-	 * @param <Sring>
+	 * @param <HttpResponse>
 	 *                output
 	 */
 	private class DownloadWebpageTask extends AsyncTask<HttpPost, Void, HttpResponse>
@@ -228,7 +228,7 @@ public class NetworkConnectionHandler implements Runnable
 		if (response != null)
 		{
 
-			if (response.containsHeader(Chef.TAG_NETWORK_REQUEST_CODE))
+			if (response.containsHeader(Middleware.TAG_NETWORK_REQUEST_CODE))
 			{
 
 				Header[] headers = response.getAllHeaders();
@@ -239,11 +239,12 @@ public class NetworkConnectionHandler implements Runnable
 					Log.i("tag", "header " + headers[i].getName() + " : " + headers[i].getValue());
 				}
 
-				String requestCodeString = response.getFirstHeader(Chef.TAG_NETWORK_REQUEST_CODE).getValue();
+				String requestCodeString = response.getFirstHeader(Middleware.TAG_NETWORK_REQUEST_CODE).getValue();
 				Log.i("tag", "requestCode : " + requestCodeString);
 				// String sessionId =
 				// response.getFirstHeader("sessionId").getValue();
 				// Log.i("tag", "sessionId : " + sessionId);
+
 				requestCode = Integer.valueOf(requestCodeString);
 
 				InputStream is = null;
@@ -274,9 +275,6 @@ public class NetworkConnectionHandler implements Runnable
 						}
 						catch (IOException e)
 						{
-							// TODO Auto-generated
-							// catch
-							// block
 							e.printStackTrace();
 						}
 					}
@@ -305,7 +303,7 @@ public class NetworkConnectionHandler implements Runnable
 
 		Log.i("tag", "download Started" + readIt(postRequest.getEntity().getContent()));
 		Header[] headers = postRequest.getAllHeaders();
-		Log.i("tag","lenght "+headers.length);
+		Log.i("tag", "lenght " + headers.length);
 		// headers[i].getValue());
 		for (int i = 0; i < headers.length; i++)
 		{
